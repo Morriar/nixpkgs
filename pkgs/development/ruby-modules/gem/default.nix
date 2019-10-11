@@ -51,15 +51,19 @@ lib.makeOverridable (
 , passthru ? {}
 , ...} @ attrs:
 
+
 let
-  src = attrs.src or (
+  src = (
     if type == "gem" then
-      fetchurl {
-        urls = map (
-          remote: "${remote}/gems/${gemName}-${version}.gem"
-        ) (attrs.source.remotes or [ "https://rubygems.org" ]);
-        inherit (attrs.source) sha256;
-      }
+	  let
+	    filename = if platform == "ruby" then "${gemName}-${version}" else "${gemName}-${version}-${platform}";
+	  in
+	    fetchurl {
+	      urls = map (
+	        remote: "${remote}/gems/${filename}.gem"
+	      ) (attrs.source.remotes or [ "https://rubygems.org" ]);
+	      inherit (attrs.source) sha256;
+	    }
     else if type == "git" then
       fetchgit {
         inherit (attrs.source) url rev sha256 fetchSubmodules;
